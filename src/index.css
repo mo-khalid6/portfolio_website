@@ -1,0 +1,204 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── Global Resets ─────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  @apply bg-background text-text-primary font-body antialiased;
+  overflow-x: hidden;
+}
+
+/* ─── Selection ──────────────────────────────────────────────────────── */
+::selection {
+  background: rgba(0, 212, 255, 0.25);
+  color: #fff;
+}
+
+/* ─── Scrollbar ──────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #0A0F1E; }
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 212, 255, 0.35);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover { background: #00D4FF; }
+
+/* ─── Design tokens (Stitch design system) ───────────────────────────── */
+/* NOTE: Tailwind custom theme handles colors; these utilities add        */
+/* glassmorphism and gradient helpers used site-wide.                    */
+
+/* Gradient text */
+.gradient-text {
+  background: linear-gradient(135deg, #00D4FF 0%, #7C3AED 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Primary gradient button */
+.btn-primary {
+  background: linear-gradient(135deg, #00D4FF 0%, #7C3AED 100%);
+  @apply text-white font-semibold rounded-lg transition-all duration-300;
+}
+.btn-primary:hover {
+  opacity: 0.92;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 212, 255, 0.35);
+}
+.btn-primary:active { transform: translateY(0); }
+
+/* Outlined ghost button */
+.btn-outline {
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  @apply text-text-primary font-semibold rounded-lg transition-all duration-300 bg-surface/40 backdrop-blur-sm;
+}
+.btn-outline:hover {
+  border-color: #00D4FF;
+  color: #00D4FF;
+  box-shadow: 0 0 18px rgba(0, 212, 255, 0.15);
+}
+
+/* Glassmorphism card (Stitch component) */
+.glass-card {
+  background: #1A2235;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.glass-card:hover {
+  border-color: rgba(0, 212, 255, 0.2);
+  box-shadow: 0 12px 40px rgba(0, 212, 255, 0.1);
+  transform: translateY(-4px);
+}
+
+/* KPI stat box */
+.stat-box {
+  @apply glass-card p-5 rounded-xl transition-all duration-300 cursor-default;
+}
+.stat-box:hover {
+  transform: translateY(-6px);
+  border-color: rgba(0, 212, 255, 0.3);
+  box-shadow: 0 16px 40px rgba(0, 212, 255, 0.13);
+}
+
+/* Section heading accent bar */
+.section-heading {
+  @apply font-headline font-bold text-3xl md:text-4xl text-text-primary relative inline-block mb-2;
+}
+.section-heading::after {
+  content: '';
+  display: block;
+  width: 48px;
+  height: 4px;
+  background: linear-gradient(90deg, #00D4FF, #7C3AED);
+  border-radius: 2px;
+  margin-top: 10px;
+}
+
+/* Skill pill / tag badge (Stitch component) */
+.skill-pill {
+  @apply inline-flex items-center px-3 py-1.5 rounded-full text-sm font-label font-medium transition-all duration-200;
+  background: rgba(0, 212, 255, 0.1);
+  border: 1px solid rgba(0, 212, 255, 0.2);
+  color: #00D4FF;
+}
+.skill-pill:hover {
+  background: rgba(0, 212, 255, 0.18);
+  border-color: rgba(0, 212, 255, 0.4);
+  box-shadow: 0 0 12px rgba(0, 212, 255, 0.15);
+}
+
+/* Grid dot/lines background */
+.grid-bg {
+  background-image:
+    linear-gradient(rgba(241,245,249,0.03) 1px, transparent 1px),
+    linear-gradient(to right, rgba(241,245,249,0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* Glow orb */
+.glow-orb {
+  background: radial-gradient(circle, rgba(0,212,255,0.25) 0%, rgba(124,58,237,0.12) 50%, transparent 70%);
+  filter: blur(40px);
+}
+
+/* Scroll reveal animation classes (CSS-based) */
+.reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.65s ease, transform 0.65s ease;
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+.reveal-left {
+  opacity: 0;
+  transform: translateX(-30px);
+  transition: opacity 0.65s ease, transform 0.65s ease;
+}
+.reveal-left.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+.reveal-right {
+  opacity: 0;
+  transform: translateX(30px);
+  transition: opacity 0.65s ease, transform 0.65s ease;
+}
+.reveal-right.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* Stagger delay helpers */
+.delay-100 { transition-delay: 0.1s !important; }
+.delay-200 { transition-delay: 0.2s !important; }
+.delay-300 { transition-delay: 0.3s !important; }
+.delay-400 { transition-delay: 0.4s !important; }
+.delay-500 { transition-delay: 0.5s !important; }
+
+/* Timeline left-border accent */
+.timeline-item {
+  @apply relative pl-8;
+}
+.timeline-item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: linear-gradient(180deg, #00D4FF 0%, rgba(0,212,255,0.1) 100%);
+}
+.timeline-item::after {
+  content: '';
+  position: absolute;
+  left: -5px;
+  top: 18px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #00D4FF;
+  box-shadow: 0 0 12px rgba(0, 212, 255, 0.6);
+}
+
+/* Light mode overrides */
+html:not(.dark) body { @apply bg-slate-50 text-slate-900; }
+html:not(.dark) .glass-card { background: #fff; border-color: rgba(0,0,0,0.07); }
+html:not(.dark) .btn-outline { @apply bg-white border-slate-200 text-slate-700; }
+html:not(.dark) .section-heading { @apply text-slate-900; }
+html:not(.dark) ::-webkit-scrollbar-track { background: #f8fafc; }
+
+/* Mobile hamburger animation */
+.hamburger span {
+  @apply block w-6 h-0.5 bg-text-primary rounded transition-all duration-300;
+}
+.hamburger.open span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+.hamburger.open span:nth-child(2) { opacity: 0; }
+.hamburger.open span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
