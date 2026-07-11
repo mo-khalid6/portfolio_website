@@ -1,5 +1,9 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
 
+// Get your free access key at https://web3forms.com — enter your email, they send it
+// instantly, no signup/password required. Paste it below. This key is safe to expose
+// client-side (Web3Forms is designed for that — it's not a secret like an API key).
+const WEB3FORMS_ACCESS_KEY = "441cf9c3-71af-461e-a1c7-8e1c4725edff"
 const contactLinks = [
   {
     label: 'Email',
@@ -55,6 +59,10 @@ export default function Contact() {
   const ref = useRef<HTMLDivElement>(null)
   const [copied, setCopied] = useState(false)
 
+  const [form, setForm] = useState({ name: '', email: '', phone: '', message: '' })
+  const [errors, setErrors] = useState<Record<string, string>>({})
+  const [status, setStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle')
+
   useEffect(() => {
     const observer = new IntersectionObserver(
       entries => entries.forEach(e => e.isIntersecting && e.target.classList.add('visible')),
@@ -69,6 +77,54 @@ export default function Contact() {
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }
+
+  const validate = () => {
+    const next: Record<string, string> = {}
+    if (!form.name.trim()) next.name = 'Full name is required'
+    if (!form.email.trim()) {
+      next.email = 'Email is required'
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
+      next.email = 'Enter a valid email address'
+    }
+    if (!form.message.trim()) next.message = 'Message is required'
+    setErrors(next)
+    return Object.keys(next).length === 0
+  }
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault()
+    if (!validate()) return
+
+    setStatus('sending')
+    try {
+      const res = await fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({
+          access_key: WEB3FORMS_ACCESS_KEY,
+          subject: `New portfolio inquiry from ${form.name}`,
+          from_name: form.name,
+          name: form.name,
+          email: form.email,
+          phone: form.phone || 'Not provided',
+          message: form.message,
+        }),
+      })
+      const data = await res.json()
+      if (data.success) {
+        setStatus('success')
+        setForm({ name: '', email: '', phone: '', message: '' })
+      } else {
+        setStatus('error')
+      }
+    } catch {
+      setStatus('error')
+    }
+  }
+
+  const inputClass = (field: string) =>
+    `w-full bg-card-surface border rounded-lg px-4 py-2.5 text-sm text-text-primary placeholder:text-text-secondary/50 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all ${errors[field] ? 'border-red-500/60' : 'border-border-accent focus:border-primary/50'
+    }`
 
   return (
     <section id="contact" ref={ref} className="py-24 bg-background relative overflow-hidden">
@@ -117,6 +173,93 @@ export default function Contact() {
           ))}
         </div>
 
+        {/* Inquiry form */}
+        <div className="glass-card rounded-2xl border border-border-accent p-6 sm:p-8 max-w-2xl mx-auto mb-12 reveal delay-300">
+          <h3 className="font-label font-bold text-text-primary text-lg mb-1">Inquiry Form</h3>
+          <p className="text-text-secondary text-sm mb-6">I'll get back to you shortly.</p>
+
+          <form onSubmit={handleSubmit} noValidate className="space-y-5">
+            <div>
+              <label htmlFor="contact-name" className="block text-xs font-label font-semibold text-text-secondary uppercase tracking-wider mb-1.5">
+                Full Name <span className="text-red-400">*</span>
+              </label>
+              <input
+                id="contact-name"
+                type="text"
+                value={form.name}
+                onChange={e => setForm({ ...form, name: e.target.value })}
+                placeholder="Your full name"
+                className={inputClass('name')}
+              />
+              {errors.name && <p className="text-red-400 text-xs mt-1.5">{errors.name}</p>}
+            </div>
+
+            <div>
+              <label htmlFor="contact-email" className="block text-xs font-label font-semibold text-text-secondary uppercase tracking-wider mb-1.5">
+                Email Address <span className="text-red-400">*</span>
+              </label>
+              <input
+                id="contact-email"
+                type="email"
+                value={form.email}
+                onChange={e => setForm({ ...form, email: e.target.value })}
+                placeholder="you@example.com"
+                className={inputClass('email')}
+              />
+              {errors.email && <p className="text-red-400 text-xs mt-1.5">{errors.email}</p>}
+            </div>
+
+            <div>
+              <label htmlFor="contact-phone" className="block text-xs font-label font-semibold text-text-secondary uppercase tracking-wider mb-1.5">
+                Phone Number <span className="text-text-secondary/60 normal-case font-normal">(optional)</span>
+              </label>
+              <input
+                id="contact-phone"
+                type="tel"
+                value={form.phone}
+                onChange={e => setForm({ ...form, phone: e.target.value })}
+                placeholder="(000) 000-0000"
+                className={inputClass('phone')}
+              />
+            </div>
+
+            <div>
+              <label htmlFor="contact-message" className="block text-xs font-label font-semibold text-text-secondary uppercase tracking-wider mb-1.5">
+                Message <span className="text-red-400">*</span>
+              </label>
+              <textarea
+                id="contact-message"
+                rows={5}
+                value={form.message}
+                onChange={e => setForm({ ...form, message: e.target.value })}
+                placeholder="Tell me about the role, project, or opportunity..."
+                className={`${inputClass('message')} resize-none`}
+              />
+              {errors.message && <p className="text-red-400 text-xs mt-1.5">{errors.message}</p>}
+            </div>
+
+            <button
+              type="submit"
+              disabled={status === 'sending'}
+              className="btn-primary w-full py-3 text-sm flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              {status === 'sending' ? 'Sending...' : 'Send Inquiry'}
+            </button>
+
+            {status === 'success' && (
+              <p className="text-emerald-400 text-sm text-center">
+                Thanks! Your message has been sent — I'll reply soon.
+              </p>
+            )}
+            {status === 'error' && (
+              <p className="text-red-400 text-sm text-center">
+                Something went wrong. Please try again, or email me directly at{' '}
+                <a href="mailto:muhammad6fouad@gmail.com" className="underline">muhammad6fouad@gmail.com</a>.
+              </p>
+            )}
+          </form>
+        </div>
+
         {/* Quick action buttons */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 reveal delay-500">
           <button
@@ -140,17 +283,6 @@ export default function Contact() {
               </>
             )}
           </button>
-
-          <a
-            href="mailto:muhammad6fouad@gmail.com"
-            className="btn-primary px-8 py-3 flex items-center gap-2 text-sm"
-            aria-label="Send email to Muhammad Fouad"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-            </svg>
-            Send a Message
-          </a>
 
           <a
             href="/Muhammad_Fouad_CV.pdf"
