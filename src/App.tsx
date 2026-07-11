@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { Analytics } from '@vercel/analytics/react'
 import { useScrollReveal } from './hooks/useScrollReveal'
 import Navbar from './components/Navbar'
 import Hero from './components/Hero'
@@ -37,6 +38,7 @@ export default function App() {
       </main>
       <Footer />
       <ScrollToTop />
+      <Analytics />
     </div>
   )
 }
