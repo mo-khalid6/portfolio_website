@@ -1,14 +1,90 @@
-import { useEffect, useRef } from 'react'
-
-const stats = [
-  { value: '5+',    label: 'Years Experience' },
-  { value: '100%',  label: 'Data Accuracy' },
-  { value: '100K+', label: 'Records Processed' },
-  { value: '8',     label: 'Certifications' },
-]
+import { useState, useEffect, useRef } from 'react'
 
 export default function Hero() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  
+  // States for terminal SQL query typing
+  const [displayedCode, setDisplayedCode] = useState('')
+  
+  // States for subtitle typewriter effect
+  const [currentText, setCurrentText] = useState('')
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [loopNum, setLoopNum] = useState(0)
+  const [typingSpeed, setTypingSpeed] = useState(75)
+
+  const words = [
+    'SQL · Power BI · Python',
+    'Pandas · NumPy · Data Cleaning',
+    'Web Scraping · Automation · N8N',
+    'Database Design · MS SQL Server',
+    'Data Visualization · DAX · Excel'
+  ]
+
+  // Subtitle Typewriter Loop
+  useEffect(() => {
+    const handleType = () => {
+      const i = loopNum % words.length
+      const fullText = words[i]
+
+      setCurrentText(
+        isDeleting
+          ? fullText.substring(0, currentText.length - 1)
+          : fullText.substring(0, currentText.length + 1)
+      )
+
+      setTypingSpeed(isDeleting ? 40 : 80)
+
+      if (!isDeleting && currentText === fullText) {
+        setTimeout(() => setIsDeleting(true), 2500)
+      } else if (isDeleting && currentText === '') {
+        setIsDeleting(false)
+        setLoopNum(loopNum + 1)
+      }
+    }
+
+    const timer = setTimeout(handleType, typingSpeed)
+    return () => clearTimeout(timer)
+  }, [currentText, isDeleting, loopNum, typingSpeed])
+
+  // Terminal SQL Typing Loop
+  useEffect(() => {
+    const code = `SELECT\n  insight,\n  impact\nFROM data\nWHERE quality = 'high'\n  AND story IS NOT NULL\nORDER BY value DESC;`;
+    let i = 0;
+    let timer: any;
+    const type = () => {
+      if (i < code.length) {
+        setDisplayedCode(code.substring(0, i + 1));
+        i++;
+        timer = setTimeout(type, 45 + Math.random() * 30);
+      } else {
+        timer = setTimeout(() => {
+          setDisplayedCode('');
+          i = 0;
+          type();
+        }, 5000);
+      }
+    };
+    type();
+    return () => clearTimeout(timer);
+  }, []);
+
+  const highlightSQL = (text: string) => {
+    if (!text) return '';
+    let html = text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+    
+    const keywords = ['SELECT', 'FROM', 'WHERE', 'AND', 'ORDER BY', 'DESC', 'IS NOT NULL'];
+    keywords.forEach(kw => {
+      const regex = new RegExp(`\\b${kw}\\b`, 'g');
+      html = html.replace(regex, `<span class="text-primary font-bold">${kw}</span>`);
+    });
+
+    html = html.replace(/('high')/g, '<span class="text-emerald-400 font-medium">$1</span>');
+    
+    return html;
+  };
 
   /* ── WebGL orb shader (from Stitch generated design) ─────────────── */
   useEffect(() => {
@@ -99,7 +175,7 @@ export default function Hero() {
   return (
     <section
       id="hero"
-      className="relative min-h-screen flex items-center pt-20 pb-10 overflow-hidden bg-background"
+      className="relative min-h-screen flex items-center pt-24 pb-12 overflow-hidden bg-background"
     >
       {/* WebGL animated orb (top-right) */}
       <div className="absolute top-0 right-0 w-[700px] h-[700px] pointer-events-none z-0 opacity-70">
@@ -110,69 +186,100 @@ export default function Hero() {
       <div className="absolute inset-0 z-0 grid-bg pointer-events-none" aria-hidden="true" />
 
       <div className="max-w-7xl mx-auto px-6 lg:px-8 w-full relative z-10">
-        <div className="max-w-4xl flex flex-col items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center w-full">
+          
+          {/* Left Column: Text & Hero Details */}
+          <div className="lg:col-span-7 flex flex-col items-start">
+            {/* Location badge */}
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 mb-6 reveal">
+              <span aria-hidden="true">📍</span>
+              <span className="text-sm font-label font-medium text-primary tracking-wide">Cairo, Egypt</span>
+            </div>
 
-          {/* Location badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 mb-6 reveal">
-            <span aria-hidden="true">📍</span>
-            <span className="text-sm font-label font-medium text-primary tracking-wide">Cairo, Egypt</span>
+            {/* Headline */}
+            <h1 className="font-headline font-bold text-4xl sm:text-5xl md:text-6xl lg:text-7xl leading-tight tracking-tight text-text-primary mb-4 reveal delay-100">
+              Hi, I'm{' '}
+              <span className="gradient-text">Muhammad Fouad</span>
+            </h1>
+
+            {/* Dynamic Sub-headline */}
+            <h2 className="font-display font-semibold text-xl md:text-2xl text-primary mb-6 flex flex-wrap items-center gap-2 reveal delay-200 min-h-[40px]">
+              <span>Data Analyst</span>
+              <span className="text-secondary opacity-60">|</span>
+              <span className="text-lg md:text-xl text-text-secondary font-medium transition-all duration-300">
+                {currentText}
+                <span className="animate-pulse text-primary font-bold ml-1">|</span>
+              </span>
+            </h2>
+
+            {/* Summary */}
+            <p className="text-text-secondary text-base md:text-lg leading-relaxed mb-10 max-w-2xl font-body reveal delay-300">
+              Results-driven Data Analyst with 5+ years transforming complex datasets into actionable
+              business intelligence. Specialized in building interactive dashboards, optimizing SQL
+              queries, and uncovering data trends across import/export, pharmacy, and digital media
+              industries.
+            </p>
+
+            {/* CTA buttons */}
+            <div className="flex flex-col sm:flex-row gap-4 reveal delay-400">
+              <a
+                href="#projects"
+                onClick={e => { e.preventDefault(); document.querySelector('#projects')?.scrollIntoView({ behavior: 'smooth' }) }}
+                className="btn-primary px-8 py-3.5 text-base flex items-center justify-center gap-2 group"
+              >
+                View My Work
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                </svg>
+              </a>
+              <a
+                href="#contact"
+                onClick={e => { e.preventDefault(); document.querySelector('#contact')?.scrollIntoView({ behavior: 'smooth' }) }}
+                className="btn-outline px-8 py-3.5 text-base flex items-center justify-center gap-2"
+              >
+                Contact Me
+              </a>
+            </div>
           </div>
 
-          {/* Headline */}
-          <h1 className="font-headline font-bold text-4xl sm:text-5xl md:text-6xl lg:text-7xl leading-tight tracking-tight text-text-primary mb-4 reveal delay-100">
-            Hi, I'm{' '}
-            <span className="gradient-text">Muhammad Fouad</span>
-          </h1>
-
-          {/* Sub-headline */}
-          <h2 className="font-display font-semibold text-xl md:text-2xl text-primary mb-6 flex flex-wrap items-center gap-3 reveal delay-200">
-            Data Analyst
-            <span className="text-secondary opacity-60 hidden sm:inline">|</span>
-            <span className="text-lg md:text-xl text-text-secondary font-medium">SQL · Power BI · Python</span>
-          </h2>
-
-          {/* Summary */}
-          <p className="text-text-secondary text-base md:text-lg leading-relaxed mb-10 max-w-2xl font-body reveal delay-300">
-            Results-driven Data Analyst with 5+ years transforming complex datasets into actionable
-            business intelligence. Specialized in building interactive dashboards, optimizing SQL
-            queries, and uncovering data trends across import/export, pharmacy, and digital media
-            industries.
-          </p>
-
-          {/* CTA buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 mb-16 reveal delay-400">
-            <a
-              href="#projects"
-              onClick={e => { e.preventDefault(); document.querySelector('#projects')?.scrollIntoView({ behavior: 'smooth' }) }}
-              className="btn-primary px-8 py-3.5 text-base flex items-center justify-center gap-2 group"
-            >
-              View My Work
-              <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-              </svg>
-            </a>
-            <a
-              href="#contact"
-              onClick={e => { e.preventDefault(); document.querySelector('#contact')?.scrollIntoView({ behavior: 'smooth' }) }}
-              className="btn-outline px-8 py-3.5 text-base flex items-center justify-center gap-2"
-            >
-              Contact Me
-            </a>
-          </div>
-
-          {/* KPI Stats strip */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full reveal delay-500">
-            {stats.map((s, i) => (
-              <div key={i} className="stat-box">
-                <div className="font-display font-bold text-3xl md:text-4xl text-primary mb-1">
-                  {s.value}
+          {/* Right Column: SQL Terminal Window & Stat Cards */}
+          <div className="lg:col-span-5 flex flex-col items-center lg:items-end justify-center w-full reveal delay-300">
+            {/* Terminal Container */}
+            <div className="w-full max-w-lg bg-[#070b14] border border-white/10 rounded-2xl overflow-hidden shadow-2xl shadow-primary/5 mb-6">
+              {/* Window Header */}
+              <div className="flex items-center justify-between px-4 py-3 bg-[#0c1220] border-b border-white/5">
+                <div className="flex gap-2">
+                  <div className="w-3 h-3 rounded-full bg-[#ff5f56]" />
+                  <div className="w-3 h-3 rounded-full bg-[#ffbd2e]" />
+                  <div className="w-3 h-3 rounded-full bg-[#27c93f]" />
                 </div>
-                <div className="text-xs md:text-sm text-text-secondary font-label uppercase tracking-wider">
-                  {s.label}
-                </div>
+                <span className="font-mono text-xs text-text-secondary font-medium select-none">~/fouad.sql</span>
+                <div className="w-10" />
               </div>
-            ))}
+              {/* Window Code Content */}
+              <div className="p-6 font-mono text-sm leading-relaxed text-text-primary min-h-[220px] whitespace-pre overflow-x-auto bg-[#040810]/50 select-none">
+                <code className="text-slate-300" dangerouslySetInnerHTML={{ __html: highlightSQL(displayedCode) }} />
+                <span className="animate-pulse text-primary font-bold ml-0.5">|</span>
+              </div>
+            </div>
+
+            {/* Stats Cards (below terminal window) */}
+            <div className="grid grid-cols-3 gap-4 w-full max-w-lg">
+              <div className="glass-card rounded-xl p-4 flex flex-col items-center justify-center text-center border border-white/5 hover:border-primary/20 transition-all duration-300">
+                <div className="font-display font-bold text-2xl sm:text-3xl text-primary mb-1">5+</div>
+                <div className="text-[10px] sm:text-xs text-text-secondary font-label uppercase tracking-wider font-semibold">Years</div>
+              </div>
+              <div className="glass-card rounded-xl p-4 flex flex-col items-center justify-center text-center border border-white/5 hover:border-primary/20 transition-all duration-300">
+                <div className="font-display font-bold text-2xl sm:text-3xl text-primary mb-1">5+</div>
+                <div className="text-[10px] sm:text-xs text-text-secondary font-label uppercase tracking-wider font-semibold">Projects</div>
+              </div>
+              <div className="glass-card rounded-xl p-4 flex flex-col items-center justify-center text-center border border-white/5 hover:border-primary/20 transition-all duration-300">
+                <div className="font-display font-bold text-2xl sm:text-3xl text-primary mb-1">10+</div>
+                <div className="text-[10px] sm:text-xs text-text-secondary font-label uppercase tracking-wider font-semibold">Tools</div>
+              </div>
+            </div>
           </div>
+
         </div>
       </div>
 
